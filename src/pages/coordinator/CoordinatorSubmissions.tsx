@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, XCircle, Eye, FileText, Download, Pencil, Loader2, Users } from "lucide-react";
+import { CheckCircle, XCircle, Eye, FileText, Download, Loader2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { certificadoService, SubmissaoResponse } from "@/services/coordenador/CertificadoService";
 
@@ -258,8 +258,8 @@ const CoordinatorSubmissions = () => {
                         </TableCell>
                         <TableCell className="px-6 py-4 font-medium">{sub.horas}h</TableCell>
                         <TableCell className="px-6 py-4 text-right">
-                          <Button variant="outline" size="icon" onClick={() => openModal(sub)} className="rounded-xl">
-                            <Pencil className="h-4 w-4" />
+                          <Button variant="outline" size="icon" onClick={() => openModal(sub)} className="rounded-xl" title="Visualizar submissão">
+                            <Eye className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -276,7 +276,7 @@ const CoordinatorSubmissions = () => {
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent className="max-w-5xl h-[85vh] flex flex-col overflow-hidden rounded-3xl border-0 p-0">
           <DialogHeader className="p-6 border-b border-slate-100">
-            <DialogTitle className="text-xl font-bold text-slate-800">Análise de Solicitação</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-slate-800">{selected?.status === "PENDENTE" ? "Análise de Solicitação" : "Visualizar Submissão"}</DialogTitle>
           </DialogHeader>
 
           {selected && (
@@ -333,33 +333,52 @@ const CoordinatorSubmissions = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3 flex-1">
-                  <Label htmlFor="feedback" className="text-xs font-bold text-slate-800">
-                    Feedback / Devolutiva
-                  </Label>
-                  <Textarea
-                    id="feedback"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Escreva a razão da aprovação ou reprovação..."
-                    className="rounded-xl border-slate-200 min-h-[150px]"
-                  />
-                </div>
-
-                <div className="flex gap-4 pt-4 mt-auto">
-                  <Button
-                    className="flex-1 bg-red-500 text-white hover:bg-red-600 rounded-xl h-12 font-bold"
-                    onClick={() => setConfirmRejectSub(selected)}
-                  >
-                    <XCircle className="h-4 w-4 mr-2" /> Rejeitar
-                  </Button>
-                  <Button
-                    className="flex-1 bg-green-500 text-white hover:bg-green-600 rounded-xl h-12 font-bold"
-                    onClick={() => handleAction(selected.id, "APROVADA")}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" /> Aprovar
-                  </Button>
-                </div>
+                {selected.status === "PENDENTE" ? (
+                  <>
+                    <div className="space-y-3 flex-1">
+                      <Label htmlFor="feedback" className="text-xs font-bold text-slate-800">
+                        Feedback / Devolutiva
+                      </Label>
+                      <Textarea
+                        id="feedback"
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        placeholder="Escreva a razão da aprovação ou reprovação..."
+                        className="rounded-xl border-slate-200 min-h-[150px]"
+                      />
+                    </div>
+                    <div className="flex gap-4 pt-4 mt-auto">
+                      <Button
+                        className="flex-1 bg-red-500 text-white hover:bg-red-600 rounded-xl h-12 font-bold"
+                        onClick={() => setConfirmRejectSub(selected)}
+                      >
+                        <XCircle className="h-4 w-4 mr-2" /> Rejeitar
+                      </Button>
+                      <Button
+                        className="flex-1 bg-green-500 text-white hover:bg-green-600 rounded-xl h-12 font-bold"
+                        onClick={() => handleAction(selected.id, "APROVADA")}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" /> Aprovar
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 space-y-3">
+                    <Label className="text-xs font-bold text-slate-800">
+                      Feedback do Coordenador
+                    </Label>
+                    <div className={`p-4 rounded-xl border text-sm ${
+                      selected.status === "APROVADA"
+                        ? "bg-green-50 border-green-200 text-green-800"
+                        : "bg-red-50 border-red-200 text-red-800"
+                    }`}>
+                      {selected.feedback || "Nenhum feedback registrado."}
+                    </div>
+                    <p className="text-xs text-slate-400 italic">
+                      Esta submissão já foi avaliada e não pode ser alterada.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
